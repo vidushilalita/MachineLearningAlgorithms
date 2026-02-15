@@ -25,6 +25,7 @@ from sklearn.metrics import (accuracy_score, precision_score, recall_score,
 # ── Paths ────────────────────────────────────────────────────────
 ROOT = Path(__file__).resolve().parent.parent
 MODELS_DIR = ROOT / "models"
+SAMPLE_DATA_PATH = ROOT / "data" / "raw" / "test_streamlit_app.csv"
 
 MODEL_FILES = {
     "Logistic Regression": "logistic_regression.pkl",
@@ -120,11 +121,33 @@ st.subheader(" Upload Test Data (CSV)")
 st.caption("Upload a CSV file containing test samples. "
            "Include the **LUNG_CANCER** column (YES/NO) to see evaluation metrics.")
 
-uploaded = st.file_uploader("Choose a CSV file", type=["csv"])
+# Sample data section
+if SAMPLE_DATA_PATH.exists():
+    sample_df = pd.read_csv(SAMPLE_DATA_PATH)
+    sample_df.columns = [c.strip() for c in sample_df.columns]
+    sample_csv = sample_df.to_csv(index=False).encode("utf-8")
 
-if uploaded is not None:
+    st.markdown("##### 📎 Sample Test Data")
+    col_a, col_b = st.columns(2)
+    use_sample = col_a.button("▶ Use Sample Data", type="primary")
+    col_b.download_button("⬇ Download Sample CSV", sample_csv,
+                          "test_streamlit_app.csv", "text/csv")
+else:
+    use_sample = False
+
+uploaded = st.file_uploader("Or upload your own CSV", type=["csv"])
+
+# Decide which data to use
+if use_sample and SAMPLE_DATA_PATH.exists():
+    raw_df = sample_df.copy()
+    st.success("Using sample test data (500 rows)")
+elif uploaded is not None:
     raw_df = pd.read_csv(uploaded)
     raw_df.columns = [c.strip() for c in raw_df.columns]
+else:
+    raw_df = None
+
+if raw_df is not None:
 
     st.markdown("##### Uploaded Data Preview")
     st.dataframe(raw_df.head(10), use_container_width=True)
@@ -206,4 +229,4 @@ if uploaded is not None:
         c2.metric("Predicted NO", int(pred_counts.get(0, 0)))
 
 else:
-    st.info("Upload a CSV file to get started.")
+    st.info("Upload a CSV file or click **Use Sample Data** to get started.")

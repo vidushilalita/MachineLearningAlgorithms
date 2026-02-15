@@ -208,6 +208,7 @@ __marimo__/
 
 # Project-specific ignores
 data/raw/
+!data/raw/test_streamlit_app.csv
 data/processed/
 results/
 venv/
