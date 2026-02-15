@@ -129,21 +129,21 @@ if SAMPLE_DATA_PATH.exists():
 
     st.markdown("##### 📎 Sample Test Data")
     col_a, col_b = st.columns(2)
-    use_sample = col_a.button("▶ Use Sample Data", type="primary")
+    if col_a.button("▶ Use Sample Data", type="primary"):
+        st.session_state["use_sample"] = True
     col_b.download_button("⬇ Download Sample CSV", sample_csv,
                           "test_streamlit_app.csv", "text/csv")
-else:
-    use_sample = False
 
 uploaded = st.file_uploader("Or upload your own CSV", type=["csv"])
 
-# Decide which data to use
-if use_sample and SAMPLE_DATA_PATH.exists():
-    raw_df = sample_df.copy()
-    st.success("Using sample test data (500 rows)")
-elif uploaded is not None:
+# Decide which data to use — uploaded file takes priority, then sample
+if uploaded is not None:
+    st.session_state["use_sample"] = False      # reset if user uploads
     raw_df = pd.read_csv(uploaded)
     raw_df.columns = [c.strip() for c in raw_df.columns]
+elif st.session_state.get("use_sample") and SAMPLE_DATA_PATH.exists():
+    raw_df = sample_df.copy()
+    st.success("Using sample test data (500 rows)")
 else:
     raw_df = None
 
