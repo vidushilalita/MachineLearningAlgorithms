@@ -77,6 +77,10 @@ def train_and_save_all(X_train, y_train, X_test, y_test):
 
 
 if __name__ == "__main__":
-    from data_loader import load_processed_splits
+    if __package__ in (None, ""):
+        from src.data_loader import load_processed_splits
+    else:
+        from .data_loader import load_processed_splits
+
     X_train, X_test, y_train, y_test = load_processed_splits()
     train_and_save_all(X_train, y_train, X_test, y_test)
